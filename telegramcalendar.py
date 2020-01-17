@@ -20,6 +20,54 @@ def separate_callback_data(data):
     """ Separate the callback data"""
     return data.split(";")
 
+# CURR_YEAR=[]
+CUR = 2020
+
+def create_callback_year(year=None,month=None):
+    now = datetime.datetime.now()
+    if year == None: year = now.year
+    if month == None: month = now.month
+    data_ignore = create_callback_data("IGNORE", year, month, 0)
+    keyboard =[]
+    # row = []
+    # row.append(InlineKeyboardButton("<", callback_data=create_callback_data("PREV-YEAR", year, month, 1)))
+    # row.append(InlineKeyboardButton("{}".format(year), callback_data=create_callback_data("SHOW-CALENDAR", year, month, 1)))#create_calendar(year, month)))
+    # row.append(InlineKeyboardButton(">", callback_data=create_callback_data("NEXT-YEAR", year, month, 1)))
+    # keyboard.append(row)
+
+
+    # CURR_YEAR.append(year)
+    year-=11
+    for x in range(3):
+        row = []
+        for y in range(4):
+            row.append(InlineKeyboardButton("{}".format(year), callback_data=create_callback_data("SHOW-CALENDAR", year, month, 1)))
+            year+=1
+        keyboard.append(row)
+
+    year -= 1
+    row = []
+    row.append(InlineKeyboardButton("<", callback_data=create_callback_data("PREV-TWELVE", year, month, 1)))
+    row.append(InlineKeyboardButton("", callback_data=data_ignore)) #create_callback_data("SHOW-CALENDAR", CUR, month, 1)))#create_calendar(year, month)))
+    row.append(InlineKeyboardButton(">", callback_data=create_callback_data("NEXT-TWELVE", year, month, 1)))
+    keyboard.append(row)
+    return InlineKeyboardMarkup(keyboard)
+
+def create_callback_month(year=None, month=None):
+    now = datetime.datetime.now()
+    if year == None: year = now.year
+    if month == None: month = now.month
+    data_ignore = create_callback_data("IGNORE", year, month, 0)
+    keyboard = []
+    count=0
+    for x in range(3):
+        row = []
+        for y in range(4):
+            count+=1
+            row.append(InlineKeyboardButton(calendar.month_name[count], callback_data=create_callback_data("SHOW-CALENDAR", year, count, 1)))
+        keyboard.append(row)
+
+    return InlineKeyboardMarkup(keyboard)
 
 def create_calendar(year=None,month=None):
     """
@@ -35,7 +83,8 @@ def create_calendar(year=None,month=None):
     keyboard = []
     #First row - Month and Year
     row=[]
-    row.append(InlineKeyboardButton(calendar.month_name[month]+" "+str(year),callback_data=data_ignore))
+    row.append(InlineKeyboardButton(calendar.month_name[month],callback_data=create_callback_data("SHOW-MONTH", year, month, 1)))#create_callback_year(year, month)))
+    row.append(InlineKeyboardButton(str(year),callback_data=create_callback_data("SHOW-YEAR", year, month, 1)))
     keyboard.append(row)
     #Second row - Week Days
     row=[]
@@ -75,6 +124,8 @@ def process_calendar_selection(bot,update):
     query = update.callback_query
     (action,year,month,day) = separate_callback_data(query.data)
     curr = datetime.datetime(int(year), int(month), 1)
+    curr_year = datetime.datetime(int(year), int(month), 1).year
+    curr_month = datetime.datetime(int(year), int(month), 1).month
     if action == "IGNORE":
         bot.answer_callback_query(callback_query_id= query.id)
     elif action == "DAY":
@@ -94,7 +145,51 @@ def process_calendar_selection(bot,update):
         bot.edit_message_text(text=query.message.text,
             chat_id=query.message.chat_id,
             message_id=query.message.message_id,
-            reply_markup=create_calendar(int(ne.year),int(ne.month)))
+            reply_markup=create_calendar(int(ne.year), int(ne.month)))
+    # elif action == "PREV-YEAR":
+    #     pre = curr_year - 1  #datetime.timedelta(days=1)
+    #     bot.edit_message_text(text=query.message.text,
+    #         chat_id=query.message.chat_id,
+    #         message_id=query.message.message_id,
+    #         reply_markup=create_callback_year(int(pre), int(curr_month)))
+    # elif action == "NEXT-YEAR":
+    #     ne = curr_year + 1  #datetime.timedelta(days=31)
+    #     bot.edit_message_text(text=query.message.text,
+    #         chat_id=query.message.chat_id,
+    #         message_id=query.message.message_id,
+    #         reply_markup=create_callback_year(int(ne), int(curr_month)))
+    elif action == "PREV-TWELVE":
+        pre = curr_year - 12  #datetime.timedelta(days=1)
+        bot.edit_message_text(text=query.message.text,
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=create_callback_year(int(pre), int(curr_month)))
+    elif action == "NEXT-TWELVE":
+        ne = curr_year + 12   #datetime.timedelta(days=31)
+        bot.edit_message_text(text=query.message.text,
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=create_callback_year(int(ne), int(curr_month)))
+    elif action == "SHOW-YEAR":
+        bot.edit_message_text(text=query.message.text,
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=create_callback_year(int(curr_year), int(curr_month)))
+    elif action == "SHOW-MONTH":
+        bot.edit_message_text(text=query.message.text,
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=create_callback_month(int(curr_year), int(curr_month)))
+    elif action == "SHOW-CALENDAR":
+        #print(query)
+        quer = query.data
+        lst = quer.split(';')
+        CUR = lst[1].strip()
+        print('data:', CUR)
+        bot.edit_message_text(text=query.message.text,
+            chat_id=query.message.chat_id,
+            message_id=query.message.message_id,
+            reply_markup=create_calendar(int(CUR), int(curr_month)))
     else:
         bot.answer_callback_query(callback_query_id= query.id,text="Something went wrong!")
         # UNKNOWN

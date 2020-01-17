@@ -10,8 +10,7 @@ from telegram import  ReplyKeyboardRemove
 
 import telegramcalendar
 
-
-TOKEN = ""
+TOKEN = "885842438:AAG-RjREPQzRV3mXhJiYx79CoIHuu9c4rcE"
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -35,7 +34,7 @@ def inline_handler(bot,update):
 if TOKEN == "":
     print("Please write TOKEN into file")
 else:
-    up = Updater("TOKEN")
+    up = Updater(TOKEN)
 
     up.dispatcher.add_handler(CommandHandler("calendar",calendar_handler))
     up.dispatcher.add_handler(CallbackQueryHandler(inline_handler))
