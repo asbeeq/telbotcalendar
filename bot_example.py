@@ -27,7 +27,7 @@ def inline_handler(bot,update):
     selected,date = telegramcalendar.process_calendar_selection(bot, update)
     if selected:
         bot.send_message(chat_id=update.callback_query.from_user.id,
-                        text="You selected %s" % (date.strftime("%d/%m/%Y")),
+                        text="You selected %s" % (date.strftime("%d/%m/%Y")),  #здесь можно дату добавить в перенную
                         reply_markup=ReplyKeyboardRemove())
 
 
@@ -36,7 +36,7 @@ if TOKEN == "":
 else:
     up = Updater(TOKEN)
 
-    up.dispatcher.add_handler(CommandHandler("calendar",calendar_handler))
+    up.dispatcher.add_handler(CommandHandler("calendar",calendar_handler))   #вызов каленьдаря можно изменить
     up.dispatcher.add_handler(CallbackQueryHandler(inline_handler))
 
     up.start_polling()
